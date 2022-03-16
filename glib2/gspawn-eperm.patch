@@ -1,0 +1,43 @@
+diff --git a/glib/gspawn.c b/glib/gspawn.c
+index 67be6a6af..aaefd5b0d 100644
+--- a/glib/gspawn.c
++++ b/glib/gspawn.c
+@@ -1533,9 +1533,18 @@ safe_fdwalk_set_cloexec (int lowfd)
+    *
+    * Handle ENOSYS in case it’s supported in libc but not the kernel; if so,
+    * fall back to safe_fdwalk(). Handle EINVAL in case `CLOSE_RANGE_CLOEXEC`
+-   * is not supported. */
++   * is not supported.
++   *
++   * Also handle EPERM for the cases where GLib is running under broken versions
++   * of Docker+libseccomp which don’t recognise `close_range()` so block calls
++   * to it under a default security policy which returns EPERM rather than (the
++   * correct) ENOSYS. This workaround should be carried in distributions until
++   * they have versions of libseccomp and Docker which contain:
++   *  - https://salsa.debian.org/debian/libseccomp/-/blob/debian/bullseye/debian/patches/syscalls_add_close_range_syscall.patch
++   *  - https://github.com/opencontainers/runc/issues/2151
++   */
+   int ret = close_range (lowfd, G_MAXUINT, CLOSE_RANGE_CLOEXEC);
+-  if (ret == 0 || !(errno == ENOSYS || errno == EINVAL))
++  if (ret == 0 || !(errno == ENOSYS || errno == EINVAL || errno == EPERM))
+     return ret;
+ #endif  /* HAVE_CLOSE_RANGE */
+   return safe_fdwalk (set_cloexec, GINT_TO_POINTER (lowfd));
+@@ -1586,9 +1595,15 @@ safe_closefrom (int lowfd)
+    * situations: https://bugs.python.org/issue38061
+    *
+    * Handle ENOSYS in case it’s supported in libc but not the kernel; if so,
+-   * fall back to safe_fdwalk(). */
++   * fall back to safe_fdwalk().
++   *
++   * Also handle EPERM for the cases where GLib is running under broken versions
++   * of Docker+libseccomp which don’t recognise `close_range()` so block calls
++   * to it under a default security policy which returns EPERM rather than (the
++   * correct) ENOSYS.
++   */
+   int ret = close_range (lowfd, G_MAXUINT, 0);
+-  if (ret == 0 || errno != ENOSYS)
++  if (ret == 0 || !(errno == ENOSYS || errno == EPERM))
+     return ret;
+ #endif  /* HAVE_CLOSE_RANGE */
+   return safe_fdwalk (close_func, GINT_TO_POINTER (lowfd));
