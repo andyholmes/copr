@@ -1,27 +1,21 @@
-Name: glib2
-Version: 2.72.0
+Name:    glib2
+Version: 2.74.0
 Release: 1.gh
 Summary: A library of handy utility functions
 
 License: LGPLv2+
-URL: https://www.gtk.org
-Source0: https://download.gnome.org/sources/glib/2.72/glib-%{version}.tar.xz
+URL:     https://www.gtk.org
+Source0: https://download.gnome.org/sources/glib/2.74/glib-%{version}.tar.xz
 
 # Required for RHEL core crypto components policy. Good for Fedora too.
 # https://bugzilla.redhat.com/show_bug.cgi?id=1630260
 # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/903
 Patch0: gnutls-hmac.patch
 
-# Add patches to move applications into systemd scopes in compliance with
-# https://systemd.io/DESKTOP_ENVIRONMENTS/
-# Proposed upstream at https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1596
-Patch1: gdesktopappinfo.patch
-
 # recent close_range() changes break CircleCI and GitHub actions -- we can remove this when
 # the baremetal Docker is updated there i.e. lets be a little bit pragmatic...
 Patch2: gspawn-eperm.patch
 
-BuildRequires: chrpath
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: gettext
@@ -36,7 +30,7 @@ BuildRequires: meson
 BuildRequires: systemtap-sdt-devel
 BuildRequires: pkgconfig(libelf)
 BuildRequires: pkgconfig(libffi)
-BuildRequires: pkgconfig(libpcre)
+BuildRequires: pkgconfig(libpcre2-8)
 BuildRequires: pkgconfig(mount)
 BuildRequires: pkgconfig(sysprof-capture-4)
 BuildRequires: pkgconfig(zlib)
@@ -85,6 +79,8 @@ The glib2-doc package includes documentation for the GLib library.
 %package static
 Summary: glib static
 Requires: %{name}-devel = %{version}-%{release}
+Requires: pcre2-static
+Requires: sysprof-capture-static
 
 %description static
 The %{name}-static subpackage contains static libraries for %{name}.
@@ -101,10 +97,6 @@ the functionality of the installed glib2 package.
 %autosetup -n glib-%{version} -p1
 
 %build
-# No surprise bundled libraries
-rm -rf glib/pcre
-rm -rf subprojects
-
 %meson \
     -Dman=true \
     -Ddtrace=true \
@@ -133,8 +125,6 @@ rm -rf subprojects
 # do this, see https://github.com/mesonbuild/meson/issues/5027.
 touch -r gio/gdbus-2.0/codegen/config.py.in %{buildroot}%{_datadir}/glib-2.0/codegen/*.py
 
-chrpath --delete %{buildroot}%{_libdir}/*.so
-
 # Perform byte compilation manually to avoid issues with
 # irreproducibility of the default invalidation mode, see
 # https://www.python.org/dev/peps/pep-0552/ and
@@ -162,13 +152,13 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 
 %files -f glib20.lang
-%license COPYING
-%doc AUTHORS NEWS README
-%{_libdir}/libglib-2.0.so.*
-%{_libdir}/libgthread-2.0.so.*
-%{_libdir}/libgmodule-2.0.so.*
-%{_libdir}/libgobject-2.0.so.*
-%{_libdir}/libgio-2.0.so.*
+%license LICENSES/LGPL-2.1-or-later.txt
+%doc NEWS README.md
+%{_libdir}/libglib-2.0.so.0*
+%{_libdir}/libgthread-2.0.so.0*
+%{_libdir}/libgmodule-2.0.so.0*
+%{_libdir}/libgobject-2.0.so.0*
+%{_libdir}/libgio-2.0.so.0*
 %dir %{_datadir}/bash-completion
 %dir %{_datadir}/bash-completion/completions
 %{_datadir}/bash-completion/completions/gapplication
@@ -186,6 +176,7 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_bindir}/gsettings
 %{_bindir}/gdbus
 %{_bindir}/gapplication
+%{_libexecdir}/gio-launch-desktop
 %{_mandir}/man1/gio.1*
 %{_mandir}/man1/gio-querymodules.1*
 %{_mandir}/man1/glib-compile-schemas.1*
