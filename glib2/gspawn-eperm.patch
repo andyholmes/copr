@@ -1,8 +1,8 @@
 diff --git a/glib/gspawn.c b/glib/gspawn.c
-index 67be6a6af..aaefd5b0d 100644
+index 4e029eedf..1cdfca5df 100644
 --- a/glib/gspawn.c
 +++ b/glib/gspawn.c
-@@ -1533,9 +1533,18 @@ safe_fdwalk_set_cloexec (int lowfd)
+@@ -1537,9 +1537,18 @@ safe_fdwalk_set_cloexec (int lowfd)
     *
     * Handle ENOSYS in case it’s supported in libc but not the kernel; if so,
     * fall back to safe_fdwalk(). Handle EINVAL in case `CLOSE_RANGE_CLOEXEC`
@@ -23,7 +23,7 @@ index 67be6a6af..aaefd5b0d 100644
      return ret;
  #endif  /* HAVE_CLOSE_RANGE */
    return safe_fdwalk (set_cloexec, GINT_TO_POINTER (lowfd));
-@@ -1586,9 +1595,15 @@ safe_closefrom (int lowfd)
+@@ -1590,9 +1599,15 @@ safe_closefrom (int lowfd)
     * situations: https://bugs.python.org/issue38061
     *
     * Handle ENOSYS in case it’s supported in libc but not the kernel; if so,
