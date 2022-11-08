@@ -1,6 +1,6 @@
 Name:    glib2
-Version: 2.74.0
-Release: 3.gh
+Version: 2.74.1
+Release: 2.gh
 Summary: A library of handy utility functions
 
 License: LGPLv2+
@@ -12,9 +12,8 @@ Source0: https://download.gnome.org/sources/glib/2.74/glib-%{version}.tar.xz
 # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/903
 Patch0: gnutls-hmac.patch
 
-# Backported from upstream
-# https://gitlab.gnome.org/GNOME/glib/-/merge_requests/2921
-Patch1: 2921.patch
+# https://gitlab.gnome.org/GNOME/glib/-/merge_requests/3039
+Patch1: glib-2.74.1-revert-fd-handling.patch
 
 # recent close_range() changes break CircleCI and GitHub actions -- we can remove this when
 # the baremetal Docker is updated there i.e. lets be a little bit pragmatic...
