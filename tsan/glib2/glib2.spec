@@ -1,38 +1,42 @@
-Name:    glib2
-Version: 2.76.2
-Release: 1.tsan
-Summary: A library of handy utility functions
+Name:           glib2
+Version:        2.78.0
+Release:        1.tsan
+Summary:        A library of handy utility functions
 
-License: LGPL-2.1-or-later
-URL:     https://www.gtk.org
-Source0: https://download.gnome.org/sources/glib/2.76/glib-%{version}.tar.xz
+License:        LGPL-2.1-or-later
+URL:            https://www.gtk.org
+Source:         https://download.gnome.org/sources/glib/2.78/glib-%{version}.tar.xz
 
 # Required for RHEL core crypto components policy. Good for Fedora too.
 # https://bugzilla.redhat.com/show_bug.cgi?id=1630260
 # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/903
-Patch0: gnutls-hmac.patch
+Patch:          gnutls-hmac.patch
 
-BuildRequires: gcc
-BuildRequires: gcc-c++
-BuildRequires: gettext
-BuildRequires: gtk-doc
-BuildRequires: perl-interpreter
+# recent close_range() changes break CircleCI and GitHub actions -- we can remove this when
+# the baremetal Docker is updated there i.e. lets be a little bit pragmatic...
+Patch:          gspawn-eperm.patch
+
+BuildRequires:  gcc
+BuildRequires:  gcc-c++
+BuildRequires:  gettext
+BuildRequires:  gtk-doc
+BuildRequires:  perl-interpreter
 # for sys/inotify.h
-BuildRequires: glibc-devel
-BuildRequires: libattr-devel
-BuildRequires: libselinux-devel
-BuildRequires: meson
+BuildRequires:  glibc-devel
+BuildRequires:  libattr-devel
+BuildRequires:  libselinux-devel
+BuildRequires:  meson
 # for sys/sdt.h
-BuildRequires: systemtap-sdt-devel
-BuildRequires: pkgconfig(libelf)
-BuildRequires: pkgconfig(libffi)
-BuildRequires: pkgconfig(libpcre2-8)
-BuildRequires: pkgconfig(mount)
-BuildRequires: pkgconfig(sysprof-capture-4)
-BuildRequires: pkgconfig(zlib)
-BuildRequires: libtsan
-BuildRequires: python3-devel
-BuildRequires: /usr/bin/marshalparser
+BuildRequires:  systemtap-sdt-devel
+BuildRequires:  pkgconfig(libelf)
+BuildRequires:  pkgconfig(libffi)
+BuildRequires:  pkgconfig(libpcre2-8)
+BuildRequires:  pkgconfig(mount)
+BuildRequires:  pkgconfig(sysprof-capture-4)
+BuildRequires:  pkgconfig(zlib)
+BuildRequires:	libtsan
+BuildRequires:  python3-devel
+BuildRequires:  /usr/bin/marshalparser
 
 # For gnutls-hmac.patch. We now dlopen libgnutls.so.30 so that we can build a
 # static glib2 without depending on a static build of GnuTLS as well. This will
@@ -42,6 +46,7 @@ Requires: libgnutls.so.30()(64bit)
 %else
 Requires: libgnutls.so.30
 %endif
+Requires: libtsan
 
 # Remove gamin dependency
 Obsoletes: glib2-fam < 2.67.1-3
@@ -191,6 +196,7 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_includedir}/*
 %{_datadir}/aclocal/*
 %{_libdir}/pkgconfig/*
+%{_datadir}/glib-2.0/dtds
 %{_datadir}/glib-2.0/gdb
 %{_datadir}/glib-2.0/gettext
 %{_datadir}/glib-2.0/schemas/gschema.dtd
