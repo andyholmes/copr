@@ -1,6 +1,6 @@
 Name:           glib2
 Version:        2.78.0
-Release:        1.tsan
+Release:        3.tsan
 Summary:        A library of handy utility functions
 
 License:        LGPL-2.1-or-later
